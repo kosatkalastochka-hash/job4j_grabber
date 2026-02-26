@@ -9,12 +9,13 @@ public class Post {
     String description;
     Long time;
 
-    public Post(String description, Long id, String link, Long time, String title) {
-        this.description = description;
+    public Post(Long id, String title, String description, String link, Long time) {
         this.id = id;
+        this.title = title;
+        this.description = description;
         this.link = link;
         this.time = time;
-        this.title = title;
+
     }
 
     public void setDescription(String description) {
@@ -49,5 +50,17 @@ public class Post {
     @Override
     public int hashCode() {
         return Objects.hash(title, link);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Post{");
+        sb.append(", id=").append(id).append('\'');
+        sb.append(", title='").append(title).append('\'');
+        sb.append("description='").append(description).append('\'');
+        sb.append(", link='").append(link).append('\'');
+        sb.append(", time=").append(time);
+        sb.append('}');
+        return sb.toString();
     }
 }
