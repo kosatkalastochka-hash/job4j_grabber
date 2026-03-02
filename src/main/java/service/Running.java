@@ -22,13 +22,16 @@ public class Running {
             var post = new Post();
             post.setTitle("Super Java Job");
             store.save(post);
+            scheduler.init();
             scheduler.load(
                     Integer.parseInt(config.get("rabbit.interval")),
                     SuperJobGrab.class,
                     store);
             Thread.sleep(10000);
+
         } catch (SQLException | InterruptedException e) {
             LOG.error("When create a connection", e);
         }
     }
+
 }

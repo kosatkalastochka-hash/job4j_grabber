@@ -15,18 +15,28 @@ public class JdbcStore implements Store {
     }
 
     private Post createPost(ResultSet rs) throws SQLException {
-        return new Post(rs.getLong("id"), rs.getString("title"), rs.getString("link"),
-                rs.getString("description"), rs.getTimestamp("time").getTime());
+        Timestamp t = rs.getTimestamp("created");
+        Long time = null;
+        if (t != null) {
+            time = t.getTime();
+        }
+        return new Post(rs.getLong("id"), rs.getString("name"), rs.getString("text"),
+                rs.getString("link"), time);
     }
 
     @Override
     public void save(Post post) {
-        String sql = "INSERT INTO post(title, link, description, time) VALUES (?, ?, ?, ?) RETURNING id";
+        String sql = "INSERT INTO post( name, link, text, created) VALUES (?, ?, ?, ?) RETURNING id";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, post.getTitle());
             statement.setString(2, post.getLink());
             statement.setString(3, post.getDescription());
-            statement.setTimestamp(4,  new Timestamp(post.getTime()));
+            Long time = post.getTime();
+            if (time != null) {
+                statement.setTimestamp(4, new Timestamp(time));
+            } else {
+                statement.setNull(4, Types.TIMESTAMP);
+            }
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 post.setId(resultSet.getLong("id"));
@@ -40,7 +50,7 @@ public class JdbcStore implements Store {
     public List<Post> getAll() {
         List<Post> result = new ArrayList<>();
         try (Statement statement = connection.createStatement()) {
-            ResultSet rs = statement.executeQuery("SELECT * FROM items");
+            ResultSet rs = statement.executeQuery("SELECT * FROM post");
             while (rs.next()) {
                 Post post = createPost(rs);
                 result.add(post);
@@ -53,7 +63,7 @@ public class JdbcStore implements Store {
 
     @Override
     public Optional<Post> findById(Long id) {
-        String sql = "SELECT * FROM items WHERE id = ?";
+        String sql = "SELECT * FROM post WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
             ResultSet rs = statement.executeQuery();
