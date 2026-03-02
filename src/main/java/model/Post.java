@@ -9,6 +9,9 @@ public class Post {
     String description;
     Long time;
 
+    public Post() {
+    }
+
     public Post(Long id, String title, String description, String link, Long time) {
         this.id = id;
         this.title = title;
@@ -16,6 +19,26 @@ public class Post {
         this.link = link;
         this.time = time;
 
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public Long getTime() {
+        return time;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public void setDescription(String description) {
