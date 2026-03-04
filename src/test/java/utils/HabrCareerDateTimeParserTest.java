@@ -63,7 +63,7 @@ class HabrCareerDateTimeParserTest {
     }
 
     @Test
-    void ParsingLeapYear(){
+    void parsingLeapYear() {
         String dateString = "2024-02-29T12:00:00";
         LocalDateTime result = parser.parse(dateString);
         assertThat(2024).isEqualTo(result.getYear());
