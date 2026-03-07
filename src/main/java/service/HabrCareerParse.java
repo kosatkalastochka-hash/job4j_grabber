@@ -4,9 +4,10 @@ import model.Post;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
+import utils.DateTimeParser;
 
 import java.io.IOException;
-import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +19,11 @@ public class HabrCareerParse implements Parse {
     private static final String PREFIX = "/vacancies?page=";
     private static final String SUFFIX = "&q=Java%20developer&type=all";
     private static final short PAGE = 5;
+    private final DateTimeParser dateTimeParser;
+
+    public HabrCareerParse(DateTimeParser dateTimeParser) {
+        this.dateTimeParser = dateTimeParser;
+    }
 
     public List<Post> fetch() {
         var result = new ArrayList<Post>();
@@ -31,14 +37,14 @@ public class HabrCareerParse implements Parse {
                     var titleElement = row.select(".vacancy-card__title").first();
                     var linkElement = titleElement.child(0);
                     var timeElement = row.select(".vacancy-card__date").first().select(".basic-date").first();
-                    Long time = OffsetDateTime.parse(timeElement.attr("datetime")).toInstant().toEpochMilli();
+                    Long second = dateTimeParser.parse(timeElement.attr("datetime")).toEpochSecond(ZoneOffset.UTC);
                     String vacancyName = titleElement.text();
                     String link = String.format("%s%s", SOURCE_LINK,
                             linkElement.attr("href"));
                     var post = new Post();
                     post.setTitle(vacancyName);
                     post.setLink(link);
-                    post.setTime(time);
+                    post.setTime(second);
                     result.add(post);
                 });
             }
