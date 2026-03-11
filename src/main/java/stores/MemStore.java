@@ -5,11 +5,14 @@ import model.Post;
 import java.util.*;
 
 public class MemStore implements Store {
+
+    private long id = 1;
     private final Map<Long, Post> mem = new HashMap<>();
 
     @Override
     public void save(Post post) {
-        mem.put(post.getId(), post);
+        post.setId(id);
+        mem.put(id++, post);
     }
 
     @Override

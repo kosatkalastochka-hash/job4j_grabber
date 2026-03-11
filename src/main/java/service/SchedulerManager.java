@@ -1,8 +1,9 @@
 package service;
 
-import org.apache.log4j.Logger;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import stores.Store;
 
 import static org.quartz.JobBuilder.newJob;
@@ -11,7 +12,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 public class SchedulerManager implements AutoCloseable {
 
-    private static final Logger LOG = Logger.getLogger(SchedulerManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SchedulerManager.class);
     private Scheduler scheduler;
 
     public void init() {
@@ -19,14 +20,15 @@ public class SchedulerManager implements AutoCloseable {
            scheduler = StdSchedulerFactory.getDefaultScheduler();
            scheduler.start();
        } catch (SchedulerException e) {
-           throw new RuntimeException(e);
+           LOG.error("Ошибка при инициализации планировщика", e);
        }
 
     }
 
-    public void load(int period, Class<SuperJobGrab> task, Store store) {
+    public void load(int period, Class<SuperJobGrab> task, HabrCareerParse parse, Store store) {
         try {
             var data = new JobDataMap();
+            data.put("parse", parse);
             data.put("store", store);
             var job = newJob(task)
                     .usingJobData(data)
@@ -42,7 +44,7 @@ public class SchedulerManager implements AutoCloseable {
 
             scheduler.scheduleJob(job, trigger);
         } catch (SchedulerException e) {
-            throw new RuntimeException(e);
+            LOG.error("Ошибка при загрузке планировщика", e);
         }
     }
 
@@ -50,9 +52,11 @@ public class SchedulerManager implements AutoCloseable {
         if (scheduler != null) {
             try {
                 scheduler.shutdown();
+                LOG.info("Планировщик остановлен");
             } catch (SchedulerException e) {
-                throw new RuntimeException(e);
+                LOG.error("Ошибка при остановке планировщика", e);
             }
         }
     }
+
 }

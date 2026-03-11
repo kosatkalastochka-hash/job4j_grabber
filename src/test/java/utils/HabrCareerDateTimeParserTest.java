@@ -14,7 +14,7 @@ class HabrCareerDateTimeParserTest {
 
     @Test
     void correctDate() {
-        String dateString = "2023-12-25T15:30:45";
+        String dateString = "2023-12-25T15:30:45+03:00";
         LocalDateTime result = parser.parse(dateString);
         assertThat(2023).isEqualTo(result.getYear());
         assertThat(12).isEqualTo(result.getMonth().getValue());
@@ -26,7 +26,7 @@ class HabrCareerDateTimeParserTest {
 
     @Test
     void beginningOfTheYear() {
-        String dateString = "2023-01-01T00:00:00";
+        String dateString = "2023-01-01T00:00:00+03:00";
         LocalDateTime result = parser.parse(dateString);
         assertThat(2023).isEqualTo(result.getYear());
         assertThat(01).isEqualTo(result.getMonth().getValue());
@@ -38,7 +38,7 @@ class HabrCareerDateTimeParserTest {
 
     @Test
     void endOfTheYear() {
-        String dateString = "2023-12-31T23:59:59";
+        String dateString = "2023-12-31T23:59:59+03:00";
         LocalDateTime result = parser.parse(dateString);
         assertThat(2023).isEqualTo(result.getYear());
         assertThat(12).isEqualTo(result.getMonth().getValue());
@@ -50,7 +50,7 @@ class HabrCareerDateTimeParserTest {
 
     @Test
     void incorrectDate() {
-        String dateString = "2023-13-33T25:59:59";
+        String dateString = "2023-13-33T25:59:59+03:00";
         assertThatThrownBy(() -> parser.parse(dateString))
                 .isInstanceOf(DateTimeParseException.class);
     }
@@ -64,7 +64,7 @@ class HabrCareerDateTimeParserTest {
 
     @Test
     void parsingLeapYear() {
-        String dateString = "2024-02-29T12:00:00";
+        String dateString = "2024-02-29T12:00:00+03:00";
         LocalDateTime result = parser.parse(dateString);
         assertThat(2024).isEqualTo(result.getYear());
         assertThat(02).isEqualTo(result.getMonth().getValue());

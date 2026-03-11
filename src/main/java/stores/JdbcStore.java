@@ -1,6 +1,8 @@
 package stores;
 
 import model.Post;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -9,6 +11,7 @@ import java.util.Optional;
 
 public class JdbcStore implements Store {
     private final Connection connection;
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcStore.class);
 
     public JdbcStore(Connection connection) {
         this.connection = connection;
@@ -26,7 +29,8 @@ public class JdbcStore implements Store {
 
     @Override
     public void save(Post post) {
-        String sql = "INSERT INTO post( name, link, text, created) VALUES (?, ?, ?, ?) RETURNING id";
+        String sql = "INSERT INTO post( name, link, text, created) VALUES (?, ?, ?, ?) "
+                + "ON CONFLICT (link) DO NOTHING RETURNING id";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, post.getTitle());
             statement.setString(2, post.getLink());
@@ -42,7 +46,7 @@ public class JdbcStore implements Store {
                 post.setId(resultSet.getLong("id"));
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            LOG.error("Ошибка при сохранении  поста( save())", e);
         }
     }
 
@@ -56,7 +60,7 @@ public class JdbcStore implements Store {
                 result.add(post);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            LOG.error("Ошибка при получении списка всех постов из базы данных(getAll())", e);
         }
         return result;
     }
@@ -67,15 +71,10 @@ public class JdbcStore implements Store {
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
             ResultSet rs = statement.executeQuery();
-                return Optional.ofNullable(createPost(rs));
+            return Optional.ofNullable(createPost(rs));
         } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void close() throws Exception {
-        if (connection != null) {
-            connection.close();
+            LOG.error("Ошибка при поиске поста по  id (findById())  id: " + id, e);
+            return Optional.empty();
         }
     }
 }

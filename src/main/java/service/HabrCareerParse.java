@@ -1,9 +1,10 @@
 package service;
 
 import model.Post;
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import utils.DateTimeParser;
 
 import java.io.IOException;
@@ -13,8 +14,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class HabrCareerParse implements Parse {
-    private static final Logger LOG = Logger.getLogger(HabrCareerParse.class);
+public class HabrCareerParse implements Parse  {
+    private static final Logger LOG = LoggerFactory.getLogger(HabrCareerParse.class);
     private static final String SOURCE_LINK = "https://career.habr.com";
     private static final String PREFIX = "/vacancies?page=";
     private static final String SUFFIX = "&q=Java%20developer&type=all";
@@ -45,18 +46,18 @@ public class HabrCareerParse implements Parse {
                     post.setTitle(vacancyName);
                     post.setLink(link);
                     post.setTime(second);
+                    post.setDescription(retrieveDescription(link));
                     result.add(post);
                 });
             }
         } catch (IOException e) {
-            LOG.error("When load page", e);
+            LOG.error("Ошибка при загрузке страницы (fetch())", e);
         }
         return result;
     }
 
     private String retrieveDescription(String link) {
-        String fullLink = "%s%s".formatted(SOURCE_LINK, link);
-        var connection = Jsoup.connect(fullLink);
+        var connection = Jsoup.connect(link);
         String result = null;
         List<Element> description = new ArrayList<>();
         try {
@@ -77,10 +78,14 @@ public class HabrCareerParse implements Parse {
             description.add(null);
             var conditions = document.select(".content-section__title").get(1);
             description.add(conditions);
-            var condition1 = document.select(".chip-with-icon__text").get(2);
-            description.add(condition1);
-            var condition2 = document.select(".chip-with-icon__text").last();
-            description.add(condition2);
+            if (document.select(".chip-with-icon__text").size() >= 3) {
+                var condition1 = document.select(".chip-with-icon__text").get(2);
+                description.add(condition1);
+            }
+            if (document.select(".chip-with-icon__text").size() >= 4) {
+                var condition2 = document.select(".chip-with-icon__text").last();
+                description.add(condition2);
+            }
             description.add(null);
             var company = document.select(".content-section__title").last();
             description.add(company);
@@ -100,7 +105,7 @@ public class HabrCareerParse implements Parse {
                     .map(element -> element.map(Element::wholeText).orElse(""))
                     .collect(Collectors.joining(System.lineSeparator()));
         } catch (IOException e) {
-            LOG.error("When load description", e);
+            LOG.error("Ошибка при загрузке описания вакансии (retrieveDescription())", e);
         }
         return result;
     }

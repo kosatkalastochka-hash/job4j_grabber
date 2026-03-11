@@ -78,9 +78,9 @@ public class Post {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Post{");
-        sb.append(", id=").append(id).append('\'');
+        sb.append("id=").append(id).append('\'');
         sb.append(", title='").append(title).append('\'');
-        sb.append("description='").append(description).append('\'');
+        sb.append(", description='").append(description).append('\'');
         sb.append(", link='").append(link).append('\'');
         sb.append(", time=").append(time);
         sb.append('}');
